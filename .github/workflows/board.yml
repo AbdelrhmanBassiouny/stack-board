@@ -2,16 +2,14 @@ name: board
 
 # Publishes the stacked-PR board (of the public fork) to this repo's own GitHub Pages site.
 # Pure mechanics -- it reads the fork's open PRs and renders with the fork's dev/stack.py. It never
-# touches the fork or the upstream. A workflow only sees events in its own repo, so it runs on a
-# schedule (polls the fork) plus a manual/dispatch trigger; the optional repository_dispatch is fired
-# by a tiny sender workflow on the fork for near-instant refreshes on CI/label changes.
+# touches the fork or the upstream. A workflow only sees events in its own repo, so it polls the fork
+# on a schedule (plus a manual trigger); it is deliberately poll-only, so nothing has to be installed
+# on the fork's main (which would leak into the fork's stacked PRs).
 
 on:
   schedule:
-    - cron: '*/10 * * * *'      # poll the fork every ~10 minutes
+    - cron: '*/5 * * * *'        # poll the fork every ~5 minutes
   workflow_dispatch: {}
-  repository_dispatch:
-    types: [fork-activity]       # near-instant refresh when the fork's sender pings us
 
 permissions:
   contents: read
