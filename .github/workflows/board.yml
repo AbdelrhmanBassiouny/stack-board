@@ -1,0 +1,71 @@
+name: board
+
+# Publishes the stacked-PR board (of the public fork) to this repo's own GitHub Pages site.
+# Pure mechanics -- it reads the fork's open PRs and renders with the fork's dev/stack.py. It never
+# touches the fork or the upstream. A workflow only sees events in its own repo, so it runs on a
+# schedule (polls the fork) plus a manual/dispatch trigger; the optional repository_dispatch is fired
+# by a tiny sender workflow on the fork for near-instant refreshes on CI/label changes.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'      # poll the fork every ~10 minutes
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [fork-activity]       # near-instant refresh when the fork's sender pings us
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: board
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Check out the fork's stack tooling
+        uses: actions/checkout@v4
+        with:
+          repository: AbdelrhmanBassiouny/cognitive_robot_abstract_machine
+          ref: claude/stack-workflow-tooling
+          fetch-depth: 0
+
+      - name: Fetch all fork branches + the upstream trunk
+        run: |
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' --quiet
+          git remote add cram2 https://github.com/cram2/cognitive_robot_abstract_machine.git \
+            || git remote set-url cram2 https://github.com/cram2/cognitive_robot_abstract_machine.git
+          git fetch cram2 main --quiet
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Refresh board.json from the fork's open PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python dev/stack.py export
+
+      - name: Render board.html
+        run: python dev/stack.py board
+
+      - name: Package the board as the Pages site
+        run: |
+          mkdir -p _site
+          cp dev/board.html _site/index.html
+
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
