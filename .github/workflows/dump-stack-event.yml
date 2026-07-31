@@ -1,0 +1,16 @@
+name: dump-stack-event
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed, ready_for_review, edited]
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump event payload
+        run: |
+          echo "=== STACK OBJECT ==="
+          jq '.pull_request.stack // "NO-STACK-FIELD"' "$GITHUB_EVENT_PATH"
+          echo "=== ACTION ==="
+          jq '.action' "$GITHUB_EVENT_PATH"
+          echo "=== FULL PR KEYS ==="
+          jq '.pull_request | keys' "$GITHUB_EVENT_PATH"
