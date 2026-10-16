@@ -1,14 +1,16 @@
 # stack-board
 
-Hosts the **stacked-PR board** for
+Hosts the **plan dashboards** for
 [`AbdelrhmanBassiouny/cognitive_robot_abstract_machine`](https://github.com/AbdelrhmanBassiouny/cognitive_robot_abstract_machine)
-on this repo's own GitHub Pages site — kept separate because that repo's Pages is already used by its
-documentation.
+on this repository's own GitHub Pages site, kept separate because that repository's Pages
+already serves its documentation.
 
-The [`board` workflow](.github/workflows/board.yml) polls the fork every ~10 minutes (and on
-`workflow_dispatch` / `repository_dispatch`), reads its open PRs, renders the board with the fork's
-`dev/stack.py`, and deploys it to Pages. It only reads the public fork and never modifies it.
+**Dashboards:** https://abdelrhmanbassiouny.github.io/stack-board/
 
-**Board:** `https://abdelrhmanbassiouny.github.io/stack-board/`
+The [`plan-dashboards` workflow](.github/workflows/plan-dashboards.yml) runs every ~10
+minutes and on `workflow_dispatch`. It reads every plan under `.claude/personal/plans/` on
+the fork's `claude/personal-notes` branch, fetches the live state of the pull requests
+they name, renders the index and one page per plan with the fork's
+`basstler.build_site`, and deploys them to Pages. It only reads the public fork.
 
-The board's tooling and doctrine live in the fork under `dev/` (see `dev/README.md` there).
+The pages need no Claude account: anyone with the link sees the same, current site.
