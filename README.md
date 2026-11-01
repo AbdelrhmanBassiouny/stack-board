@@ -1,14 +1,18 @@
 # stack-board
 
-Hosts the **stacked-PR board** for
-[`AbdelrhmanBassiouny/cognitive_robot_abstract_machine`](https://github.com/AbdelrhmanBassiouny/cognitive_robot_abstract_machine)
-on this repo's own GitHub Pages site — kept separate because that repo's Pages is already used by its
-documentation.
+Hosts the **plan site** built by [basstler](https://github.com/AbdelrhmanBassiouny/basstler):
+one hub page, one index per registered repository, and one dashboard per plan, served on
+this repository's own GitHub Pages.
 
-The [`board` workflow](.github/workflows/board.yml) polls the fork every ~10 minutes (and on
-`workflow_dispatch` / `repository_dispatch`), reads its open PRs, renders the board with the fork's
-`dev/stack.py`, and deploys it to Pages. It only reads the public fork and never modifies it.
+**Site:** https://abdelrhmanbassiouny.github.io/stack-board/
 
-**Board:** `https://abdelrhmanbassiouny.github.io/stack-board/`
+The [`plan-site` workflow](.github/workflows/plan-site.yml) calls basstler's reusable
+`plan-site-build.yml`. It reads the hub file on `AbdelrhmanBassiouny/basstler`'s notes
+branch, which lists every repository the site publishes, renders their plans with the live
+state of the pull requests they name, and deploys only when a page changed.
 
-The board's tooling and doctrine live in the fork under `dev/` (see `dev/README.md` there).
+Nothing runs on a schedule. Each registered repository's notes branch carries a dispatch
+workflow that starts this one on every push to it; it can also be run by hand.
+
+Both workflows are written by basstler's `/setup-personal-notes`
+(`python -m basstler.plan_site.publication`); re-run it to update them.
